@@ -32,7 +32,6 @@ resource "aws_api_gateway_integration" "auth_lambda" {
   uri                     = var.auth_lambda_invoke_arn
 }
 
-# ============ Authorizer ============
 resource "aws_api_gateway_authorizer" "token" {
   name            = "bearer-authorizer"
   rest_api_id     = aws_api_gateway_rest_api.this.id
@@ -62,6 +61,10 @@ resource "aws_api_gateway_integration" "order_eks" {
   integration_http_method = "POST"
   type                    = "HTTP"
   uri                     = var.eks_service_url
+  request_parameters = {
+    "integration.request.header.x-client-cpf"     = "context.authorizer.cpf"
+    "integration.request.header.x-client-id"      = "context.authorizer.clientId"
+  }
 }
 
 resource "aws_api_gateway_resource" "proxy" {
