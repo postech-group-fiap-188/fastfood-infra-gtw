@@ -1,6 +1,5 @@
 provider "aws" {
   region  = var.region
-
   profile = var.aws_profile != "" ? var.aws_profile : null
 }
 
@@ -52,6 +51,10 @@ resource "aws_api_gateway_method" "order_post" {
   http_method   = "POST"
   authorization = "CUSTOM"
   authorizer_id = aws_api_gateway_authorizer.token.id
+
+  request_parameters = {
+    "method.request.header.Authorization" = false
+  }
 }
 
 resource "aws_api_gateway_integration" "order_eks" {
@@ -61,10 +64,21 @@ resource "aws_api_gateway_integration" "order_eks" {
   integration_http_method = "POST"
   type                    = "HTTP"
   uri                     = var.eks_service_url
-  request_parameters = {
-    "integration.request.header.x-client-cpf"     = "context.authorizer.cpf"
-    "integration.request.header.x-client-id"      = "context.authorizer.clientId"
+
+  request_templates = {
+    "application/json" = <<EOF
+#set($inputRoot = $input.path('$'))
+{
+  "cpf": "$context.authorizer.cpf",
+  "clientId": "$context.authorizer.clientId",
+#foreach($key in $inputRoot.keySet())
+  "$key": $input.json('$.$key')#if($foreach.hasNext),#end
+#end
+}
+EOF
   }
+
+  passthrough_behavior = "WHEN_NO_MATCH"
 }
 
 resource "aws_api_gateway_resource" "proxy" {
@@ -96,9 +110,8 @@ resource "aws_api_gateway_integration" "proxy_eks" {
   }
 }
 
-# Deployment
 resource "aws_api_gateway_deployment" "this" {
-  depends_on  = [
+  depends_on = [
     aws_api_gateway_integration.auth_lambda,
     aws_api_gateway_integration.order_eks,
     aws_api_gateway_integration.proxy_eks
