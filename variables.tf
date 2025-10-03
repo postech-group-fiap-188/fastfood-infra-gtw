@@ -5,7 +5,7 @@ variable "region" {
 
 variable "stage_name" {
   type    = string
-  default = "dev"
+  default = "prod"
 }
 
 variable "auth_lambda_invoke_arn" {
