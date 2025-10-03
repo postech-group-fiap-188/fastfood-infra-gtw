@@ -41,6 +41,7 @@ jobs:
       - name: Terraform Plan
         run: |
           terraform plan -out=tfplan -input=false \
+            -var="region=$AWS_REGION" \
             -var="auth_lambda_invoke_arn=$AUTH_LAMBDA_INVOKE_ARN" \
             -var="authorizer_lambda_invoke_arn=$AUTHORIZER_LAMBDA_INVOKE_ARN" \
             -var="eks_service_url=$EKS_SERVICE_URL"
