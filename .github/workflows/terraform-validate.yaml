@@ -1,0 +1,77 @@
+name: Terraform GTW Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AUTH_LAMBDA_INVOKE_ARN: ${{ secrets.AUTH_LAMBDA_INVOKE_ARN }}
+      AUTHORIZER_LAMBDA_INVOKE_ARN: ${{ secrets.AUTHORIZER_LAMBDA_INVOKE_ARN }}
+      EKS_SERVICE_URL: ${{ secrets.EKS_SERVICE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Ensure S3 bucket exists for Terraform state
+        run: |
+          if ! aws s3api head-bucket --bucket $TFSTATE_BUCKET 2>/dev/null; then
+            echo "Creating S3 bucket $TFSTATE_BUCKET..."
+            aws s3api create-bucket --bucket $TFSTATE_BUCKET --region $AWS_REGION
+            aws s3api put-bucket-versioning --bucket $TFSTATE_BUCKET --versioning-configuration Status=Enabled
+            aws s3api put-bucket-encryption --bucket $TFSTATE_BUCKET --server-side-encryption-configuration '{
+              "Rules": [
+                {
+                  "ApplyServerSideEncryptionByDefault": {
+                    "SSEAlgorithm": "AES256"
+                  }
+                }
+              ]
+            }'
+            echo "S3 bucket $TFSTATE_BUCKET created with versioning and encryption enabled."
+          else
+            echo "S3 bucket $TFSTATE_BUCKET already exists."
+          fi
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format
+        run: terraform fmt
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -out=tfplan -input=false \
+            -var="auth_lambda_invoke_arn=$AUTH_LAMBDA_INVOKE_ARN" \
+            -var="authorizer_lambda_invoke_arn=$AUTHORIZER_LAMBDA_INVOKE_ARN" \
+            -var="eks_service_url=$EKS_SERVICE_URL"
+
+      - name: Terraform Apply
+        run: |
+          terraform apply -input=false -auto-approve tfplan

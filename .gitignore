@@ -1,0 +1,9 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+
+# Local environment variables
+.env
+
+# Crash logs
+*.log
