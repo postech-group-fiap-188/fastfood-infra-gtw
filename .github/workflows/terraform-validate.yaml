@@ -36,26 +36,6 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Ensure S3 bucket exists for Terraform state
-        run: |
-          if ! aws s3api head-bucket --bucket $TFSTATE_BUCKET 2>/dev/null; then
-            echo "Creating S3 bucket $TFSTATE_BUCKET..."
-            aws s3api create-bucket --bucket $TFSTATE_BUCKET --region $AWS_REGION
-            aws s3api put-bucket-versioning --bucket $TFSTATE_BUCKET --versioning-configuration Status=Enabled
-            aws s3api put-bucket-encryption --bucket $TFSTATE_BUCKET --server-side-encryption-configuration '{
-              "Rules": [
-                {
-                  "ApplyServerSideEncryptionByDefault": {
-                    "SSEAlgorithm": "AES256"
-                  }
-                }
-              ]
-            }'
-            echo "S3 bucket $TFSTATE_BUCKET created with versioning and encryption enabled."
-          else
-            echo "S3 bucket $TFSTATE_BUCKET already exists."
-          fi
-
       - name: Terraform Init
         run: terraform init
 
