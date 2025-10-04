@@ -34,7 +34,7 @@ resource "aws_api_gateway_integration" "auth_lambda" {
 resource "aws_api_gateway_authorizer" "token" {
   name            = "bearer-authorizer"
   rest_api_id     = aws_api_gateway_rest_api.this.id
-  type            = "TOKEN"
+  type            = "REQUEST"
   identity_source = "method.request.header.Authorization"
   authorizer_uri  = var.authorizer_lambda_invoke_arn
 }
@@ -125,7 +125,7 @@ resource "aws_api_gateway_method" "proxy_any" {
   authorization = "NONE"
   request_parameters = {
     "method.request.header.Authorization" = false,
-    "method.request.path.proxy" = true
+    "method.request.path.proxy"           = true
   }
 }
 
@@ -138,7 +138,7 @@ resource "aws_api_gateway_integration" "proxy_eks" {
   uri                     = "${var.eks_service_url}/v1/{proxy}"
   passthrough_behavior    = "WHEN_NO_MATCH"
   request_parameters = {
-    "integration.request.path.proxy" = "method.request.path.proxy",
+    "integration.request.path.proxy"           = "method.request.path.proxy",
     "integration.request.header.Authorization" = "method.request.header.Authorization"
   }
 }
@@ -150,7 +150,7 @@ resource "aws_api_gateway_deployment" "this" {
     aws_api_gateway_integration.proxy_eks
   ]
   rest_api_id = aws_api_gateway_rest_api.this.id
-  
+
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.auth.id,
