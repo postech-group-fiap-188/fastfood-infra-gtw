@@ -29,8 +29,14 @@ jobs:
         with:
           terraform_version: 1.13.3
 
+      - name: Create temporary backend config
+        run: |
+          echo 'terraform {' > backend_override.tf
+          echo '  backend "local" {}' >> backend_override.tf
+          echo '}' >> backend_override.tf
+
       - name: Terraform Init (no backend)
-        run: terraform init -backend=false
+        run: terraform init -reconfigure
 
       - name: Terraform Format Check
         run: terraform fmt -check -diff
