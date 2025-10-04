@@ -1,14 +1,14 @@
-name: Terraform GTW Deploy
+name: Terraform Validate
 
 on:
-  push:
+  pull_request:
     branches:
       - main
   workflow_dispatch:
 
 jobs:
-  terraform:
-    name: Terraform
+  terraform-validate:
+    name: Terraform Validation
     runs-on: ubuntu-latest
 
     env:
@@ -29,23 +29,25 @@ jobs:
         with:
           terraform_version: 1.13.3
 
-      - name: Terraform Init
-        run: terraform init
+      - name: Create temporary backend config
+        run: |
+          echo 'terraform {' > backend_override.tf
+          echo '  backend "local" {}' >> backend_override.tf
+          echo '}' >> backend_override.tf
 
-      - name: Terraform Format
-        run: terraform fmt
+      - name: Terraform Init (no backend)
+        run: terraform init -reconfigure
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -diff
 
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform Plan
+      - name: Terraform Plan (dry-run)
         run: |
-          terraform plan -out=tfplan -input=false \
+          terraform plan -input=false -no-color \
             -var="region=$AWS_REGION" \
             -var="auth_lambda_invoke_arn=$AUTH_LAMBDA_INVOKE_ARN" \
             -var="authorizer_lambda_invoke_arn=$AUTHORIZER_LAMBDA_INVOKE_ARN" \
             -var="eks_service_url=$EKS_SERVICE_URL"
-
-      - name: Terraform Apply
-        run: |
-          terraform apply -input=false -auto-approve tfplan
