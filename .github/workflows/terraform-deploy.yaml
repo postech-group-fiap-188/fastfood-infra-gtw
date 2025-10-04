@@ -1,0 +1,50 @@
+name: Terraform Deploy
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    terraform-deploy:
+        name: Terraform Deploy
+        runs-on: ubuntu-latest
+
+        env:
+            AWS_REGION: ${{ secrets.AWS_REGION }}
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+            AUTH_LAMBDA_INVOKE_ARN: ${{ secrets.AUTH_LAMBDA_INVOKE_ARN }}
+            AUTHORIZER_LAMBDA_INVOKE_ARN: ${{ secrets.AUTHORIZER_LAMBDA_INVOKE_ARN }}
+            EKS_SERVICE_URL: ${{ secrets.EKS_SERVICE_URL }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: 1.13.3
+
+            - name: Terraform Init
+              run: terraform init
+
+            - name: Terraform Format
+              run: terraform fmt -check
+
+            - name: Terraform Validate
+              run: terraform validate
+
+            - name: Terraform Plan
+              run: |
+                  terraform plan -out=tfplan -input=false \
+                    -var="region=$AWS_REGION" \
+                    -var="auth_lambda_invoke_arn=$AUTH_LAMBDA_INVOKE_ARN" \
+                    -var="authorizer_lambda_invoke_arn=$AUTHORIZER_LAMBDA_INVOKE_ARN" \
+                    -var="eks_service_url=$EKS_SERVICE_URL"
+
+            - name: Terraform Apply
+              run: terraform apply -input=false -auto-approve tfplan

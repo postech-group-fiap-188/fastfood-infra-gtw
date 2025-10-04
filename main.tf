@@ -79,18 +79,18 @@ resource "aws_api_gateway_integration" "orders_eks" {
 
   request_templates = {
     "application/json" = <<EOF
-#set($body = $input.path('$'))
-#if($context.authorizer.clientId && $context.authorizer.cpf)
+    #set($body = $input.path('$'))
+    #if($body.containsKey("client"))
+        {
+          "client": $input.json('$.client'),
+          "items": $input.json('$.items')
+        }
+    #elseif($context.authorizer.clientId && $context.authorizer.cpf)
     {
       "client": {
         "id": "$context.authorizer.clientId",
         "cpf": "$context.authorizer.cpf"
       },
-      "items": $input.json('$.items')
-    }
-    #elseif($body.containsKey("client"))
-    {
-      "client": $input.json('$.client'),
       "items": $input.json('$.items')
     }
     #else
