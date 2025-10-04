@@ -32,11 +32,11 @@ resource "aws_api_gateway_integration" "auth_lambda" {
 }
 
 resource "aws_api_gateway_authorizer" "token" {
-  name            = "bearer-authorizer"
-  rest_api_id     = aws_api_gateway_rest_api.this.id
-  type            = "REQUEST"
-  identity_source = "context.httpMethod,context.resourcePath"
-  authorizer_uri  = var.authorizer_lambda_invoke_arn
+  name                             = "bearer-authorizer"
+  rest_api_id                      = aws_api_gateway_rest_api.this.id
+  type                             = "REQUEST"
+  identity_source                  = "context.httpMethod,context.resourcePath"
+  authorizer_uri                   = var.authorizer_lambda_invoke_arn
   authorizer_result_ttl_in_seconds = 0
 }
 
