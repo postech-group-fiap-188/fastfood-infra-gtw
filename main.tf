@@ -136,7 +136,7 @@ resource "aws_api_gateway_integration" "proxy_eks" {
   http_method             = aws_api_gateway_method.proxy_any.http_method
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.eks_service_url}/v1/{proxy}"
+  uri                     = "${var.eks_service_url}/{proxy}"
   passthrough_behavior    = "WHEN_NO_MATCH"
   request_parameters = {
     "integration.request.path.proxy"           = "method.request.path.proxy",
