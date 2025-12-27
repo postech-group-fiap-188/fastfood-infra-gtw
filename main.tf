@@ -113,6 +113,150 @@ resource "aws_api_gateway_integration_response" "orders_post_200" {
   depends_on = [aws_api_gateway_integration.orders_eks]
 }
 
+# Products Resource
+resource "aws_api_gateway_resource" "products" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_rest_api.this.root_resource_id
+  path_part   = "products"
+}
+
+# GET /products
+resource "aws_api_gateway_method" "products_get" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.products.id
+  http_method   = "GET"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.token.id
+
+  request_parameters = {
+    "method.request.header.Authorization" = false
+  }
+}
+
+resource "aws_api_gateway_integration" "products_get_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.products.id
+  http_method             = aws_api_gateway_method.products_get.http_method
+  integration_http_method = "GET"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.products_service_url}/products"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+}
+
+# POST /products
+resource "aws_api_gateway_method" "products_post" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.products.id
+  http_method   = "POST"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.token.id
+
+  request_parameters = {
+    "method.request.header.Authorization" = false
+  }
+}
+
+resource "aws_api_gateway_integration" "products_post_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.products.id
+  http_method             = aws_api_gateway_method.products_post.http_method
+  integration_http_method = "POST"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.products_service_url}/products"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+}
+
+# Products ID Resource
+resource "aws_api_gateway_resource" "products_id" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_resource.products.id
+  path_part   = "{id}"
+}
+
+# GET /products/{id}
+resource "aws_api_gateway_method" "products_id_get" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.products_id.id
+  http_method   = "GET"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.token.id
+
+  request_parameters = {
+    "method.request.header.Authorization" = false
+    "method.request.path.id"              = true
+  }
+}
+
+resource "aws_api_gateway_integration" "products_id_get_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.products_id.id
+  http_method             = aws_api_gateway_method.products_id_get.http_method
+  integration_http_method = "GET"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.products_service_url}/products/{id}"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+  
+  request_parameters = {
+    "integration.request.path.id" = "method.request.path.id"
+  }
+}
+
+# PUT /products/{id}
+resource "aws_api_gateway_method" "products_id_put" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.products_id.id
+  http_method   = "PUT"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.token.id
+
+  request_parameters = {
+    "method.request.header.Authorization" = false
+    "method.request.path.id"              = true
+  }
+}
+
+resource "aws_api_gateway_integration" "products_id_put_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.products_id.id
+  http_method             = aws_api_gateway_method.products_id_put.http_method
+  integration_http_method = "PUT"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.products_service_url}/products/{id}"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+  
+  request_parameters = {
+    "integration.request.path.id" = "method.request.path.id"
+  }
+}
+
+# DELETE /products/{id}
+resource "aws_api_gateway_method" "products_id_delete" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.products_id.id
+  http_method   = "DELETE"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.token.id
+
+  request_parameters = {
+    "method.request.header.Authorization" = false
+    "method.request.path.id"              = true
+  }
+}
+
+resource "aws_api_gateway_integration" "products_id_delete_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.products_id.id
+  http_method             = aws_api_gateway_method.products_id_delete.http_method
+  integration_http_method = "DELETE"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.products_service_url}/products/{id}"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+  
+  request_parameters = {
+    "integration.request.path.id" = "method.request.path.id"
+  }
+}
+
 resource "aws_api_gateway_resource" "proxy" {
   rest_api_id = aws_api_gateway_rest_api.this.id
   parent_id   = aws_api_gateway_rest_api.this.root_resource_id
@@ -148,6 +292,11 @@ resource "aws_api_gateway_deployment" "this" {
   depends_on = [
     aws_api_gateway_integration.auth_lambda,
     aws_api_gateway_integration.orders_eks,
+    aws_api_gateway_integration.products_get_eks,
+    aws_api_gateway_integration.products_post_eks,
+    aws_api_gateway_integration.products_id_get_eks,
+    aws_api_gateway_integration.products_id_put_eks,
+    aws_api_gateway_integration.products_id_delete_eks,
     aws_api_gateway_integration.proxy_eks
   ]
   rest_api_id = aws_api_gateway_rest_api.this.id
@@ -160,6 +309,18 @@ resource "aws_api_gateway_deployment" "this" {
       aws_api_gateway_resource.orders.id,
       aws_api_gateway_method.orders_post.id,
       aws_api_gateway_integration.orders_eks.id,
+      aws_api_gateway_resource.products.id,
+      aws_api_gateway_method.products_get.id,
+      aws_api_gateway_method.products_post.id,
+      aws_api_gateway_integration.products_get_eks.id,
+      aws_api_gateway_integration.products_post_eks.id,
+      aws_api_gateway_resource.products_id.id,
+      aws_api_gateway_method.products_id_get.id,
+      aws_api_gateway_method.products_id_put.id,
+      aws_api_gateway_method.products_id_delete.id,
+      aws_api_gateway_integration.products_id_get_eks.id,
+      aws_api_gateway_integration.products_id_put_eks.id,
+      aws_api_gateway_integration.products_id_delete_eks.id,
       aws_api_gateway_resource.proxy.id,
       aws_api_gateway_method.proxy_any.id,
       aws_api_gateway_integration.proxy_eks.id,

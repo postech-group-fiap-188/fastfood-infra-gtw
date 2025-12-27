@@ -23,6 +23,11 @@ variable "eks_service_url" {
   type        = string
 }
 
+variable "products_service_url" {
+  description = "Endpoint do microsserviço de produtos no EKS"
+  type        = string
+}
+
 variable "aws_profile" {
   description = "AWS CLI profile para uso local. No CI/CD usar credenciais via OIDC/secrets."
   type        = string
