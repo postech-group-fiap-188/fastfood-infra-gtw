@@ -28,6 +28,16 @@ variable "products_service_url" {
   type        = string
 }
 
+variable "orders_service_url" {
+  description = "Endpoint do microsserviço de orders no EKS"
+  type        = string
+}
+
+variable "payments_service_url" {
+  description = "Endpoint do microsserviço de payments no EKS"
+  type        = string
+}
+
 variable "aws_profile" {
   description = "AWS CLI profile para uso local. No CI/CD usar credenciais via OIDC/secrets."
   type        = string

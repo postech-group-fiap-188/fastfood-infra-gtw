@@ -23,12 +23,32 @@ infra-api-gateway/
 
 ## Recursos Criados
 
-- **API Gateway** com três rotas:
-  - `/auth` → rota de autenticação via Lambda (Bearer token)
-  - `/order` → rota protegida via Lambda Authorizer
-  - `/proxy` → rota proxy opcional, passa header Authorization
-- **Lambda Authorizer** configurado para `/order`
-- **Integração com serviço EKS** via HTTP/NLB ou ALB
+- **API Gateway** com as seguintes rotas mapeadas:
+  
+  **Autenticação:**
+  - `POST /auth` → Lambda de autenticação (Bearer token)
+  
+  **Orders (Pedidos):**
+  - `POST /orders` → Criar pedido (protegido por Lambda Authorizer)
+  - `GET /orders` → Listar pedidos
+  - `GET /orders/{id}` → Buscar pedido por ID
+  
+  **Payments (Pagamentos):**
+  - `POST /payments/checkout` → Processar checkout
+  - `GET /payments/status/{orderId}` → Consultar status de pagamento
+  
+  **Webhooks:**
+  - `POST /webhook/mercadopago` → Webhook do Mercado Pago
+  
+  **Products (Produtos):**
+  - `GET /products/category` → Listar produtos por categoria
+  - `GET /products/{id}` → Buscar produto por ID
+  
+  **Proxy Catch-All:**
+  - `ANY /{proxy+}` → Encaminha todas as rotas não mapeadas para o EKS (inclui Authorization header)
+
+- **Lambda Authorizer** configurado para validação de token em rotas protegidas
+- **Integração com microsserviços no EKS** via HTTP/NLB ou ALB
 - **Deploy automatizado** via GitHub Actions
 
 ---

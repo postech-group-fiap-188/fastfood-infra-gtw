@@ -113,6 +113,157 @@ resource "aws_api_gateway_integration_response" "orders_post_200" {
   depends_on = [aws_api_gateway_integration.orders_eks]
 }
 
+# GET /orders
+resource "aws_api_gateway_method" "orders_get" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.orders.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "orders_get_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.orders.id
+  http_method             = aws_api_gateway_method.orders_get.http_method
+  integration_http_method = "GET"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.orders_service_url}/orders"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+}
+
+# Orders ID Resource
+resource "aws_api_gateway_resource" "orders_id" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_resource.orders.id
+  path_part   = "{id}"
+}
+
+# GET /orders/{id}
+resource "aws_api_gateway_method" "orders_id_get" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.orders_id.id
+  http_method   = "GET"
+  authorization = "NONE"
+
+  request_parameters = {
+    "method.request.path.id" = true
+  }
+}
+
+resource "aws_api_gateway_integration" "orders_id_get_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.orders_id.id
+  http_method             = aws_api_gateway_method.orders_id_get.http_method
+  integration_http_method = "GET"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.orders_service_url}/orders/{id}"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+
+  request_parameters = {
+    "integration.request.path.id" = "method.request.path.id"
+  }
+}
+
+# Payments Resource
+resource "aws_api_gateway_resource" "payments" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_rest_api.this.root_resource_id
+  path_part   = "payments"
+}
+
+resource "aws_api_gateway_resource" "payments_checkout" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_resource.payments.id
+  path_part   = "checkout"
+}
+
+# POST /payments/checkout
+resource "aws_api_gateway_method" "payments_checkout_post" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.payments_checkout.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "payments_checkout_post_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.payments_checkout.id
+  http_method             = aws_api_gateway_method.payments_checkout_post.http_method
+  integration_http_method = "POST"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.payments_service_url}/payments/checkout"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+}
+
+resource "aws_api_gateway_resource" "payments_status" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_resource.payments.id
+  path_part   = "status"
+}
+
+resource "aws_api_gateway_resource" "payments_status_orderid" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_resource.payments_status.id
+  path_part   = "{orderId}"
+}
+
+# GET /payments/status/{orderId}
+resource "aws_api_gateway_method" "payments_status_orderid_get" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.payments_status_orderid.id
+  http_method   = "GET"
+  authorization = "NONE"
+
+  request_parameters = {
+    "method.request.path.orderId" = true
+  }
+}
+
+resource "aws_api_gateway_integration" "payments_status_orderid_get_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.payments_status_orderid.id
+  http_method             = aws_api_gateway_method.payments_status_orderid_get.http_method
+  integration_http_method = "GET"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.payments_service_url}/payments/status/{orderId}"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+
+  request_parameters = {
+    "integration.request.path.orderId" = "method.request.path.orderId"
+  }
+}
+
+# Webhook Resource
+resource "aws_api_gateway_resource" "webhook" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_rest_api.this.root_resource_id
+  path_part   = "webhook"
+}
+
+resource "aws_api_gateway_resource" "webhook_mercadopago" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_resource.webhook.id
+  path_part   = "mercadopago"
+}
+
+# POST /webhook/mercadopago
+resource "aws_api_gateway_method" "webhook_mercadopago_post" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.webhook_mercadopago.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "webhook_mercadopago_post_eks" {
+  rest_api_id             = aws_api_gateway_rest_api.this.id
+  resource_id             = aws_api_gateway_resource.webhook_mercadopago.id
+  http_method             = aws_api_gateway_method.webhook_mercadopago_post.http_method
+  integration_http_method = "POST"
+  type                    = "HTTP_PROXY"
+  uri                     = "${var.payments_service_url}/webhook/mercadopago"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+}
+
 # Products Resource
 resource "aws_api_gateway_resource" "products" {
   rest_api_id = aws_api_gateway_rest_api.this.id
@@ -120,49 +271,28 @@ resource "aws_api_gateway_resource" "products" {
   path_part   = "products"
 }
 
-# GET /products
-resource "aws_api_gateway_method" "products_get" {
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  resource_id   = aws_api_gateway_resource.products.id
-  http_method   = "GET"
-  authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.token.id
-
-  request_parameters = {
-    "method.request.header.Authorization" = false
-  }
+# Products Category Resource
+resource "aws_api_gateway_resource" "products_category" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_resource.products.id
+  path_part   = "category"
 }
 
-resource "aws_api_gateway_integration" "products_get_eks" {
+# GET /products/category
+resource "aws_api_gateway_method" "products_category_get" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.products_category.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_category_get_eks" {
   rest_api_id             = aws_api_gateway_rest_api.this.id
-  resource_id             = aws_api_gateway_resource.products.id
-  http_method             = aws_api_gateway_method.products_get.http_method
+  resource_id             = aws_api_gateway_resource.products_category.id
+  http_method             = aws_api_gateway_method.products_category_get.http_method
   integration_http_method = "GET"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.products_service_url}/products"
-  passthrough_behavior    = "WHEN_NO_MATCH"
-}
-
-# POST /products
-resource "aws_api_gateway_method" "products_post" {
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  resource_id   = aws_api_gateway_resource.products.id
-  http_method   = "POST"
-  authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.token.id
-
-  request_parameters = {
-    "method.request.header.Authorization" = false
-  }
-}
-
-resource "aws_api_gateway_integration" "products_post_eks" {
-  rest_api_id             = aws_api_gateway_rest_api.this.id
-  resource_id             = aws_api_gateway_resource.products.id
-  http_method             = aws_api_gateway_method.products_post.http_method
-  integration_http_method = "POST"
-  type                    = "HTTP_PROXY"
-  uri                     = "${var.products_service_url}/products"
+  uri                     = "${var.products_service_url}/products/category"
   passthrough_behavior    = "WHEN_NO_MATCH"
 }
 
@@ -178,12 +308,10 @@ resource "aws_api_gateway_method" "products_id_get" {
   rest_api_id   = aws_api_gateway_rest_api.this.id
   resource_id   = aws_api_gateway_resource.products_id.id
   http_method   = "GET"
-  authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.token.id
+  authorization = "NONE"
 
   request_parameters = {
-    "method.request.header.Authorization" = false
-    "method.request.path.id"              = true
+    "method.request.path.id" = true
   }
 }
 
@@ -195,63 +323,7 @@ resource "aws_api_gateway_integration" "products_id_get_eks" {
   type                    = "HTTP_PROXY"
   uri                     = "${var.products_service_url}/products/{id}"
   passthrough_behavior    = "WHEN_NO_MATCH"
-  
-  request_parameters = {
-    "integration.request.path.id" = "method.request.path.id"
-  }
-}
 
-# PUT /products/{id}
-resource "aws_api_gateway_method" "products_id_put" {
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  resource_id   = aws_api_gateway_resource.products_id.id
-  http_method   = "PUT"
-  authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.token.id
-
-  request_parameters = {
-    "method.request.header.Authorization" = false
-    "method.request.path.id"              = true
-  }
-}
-
-resource "aws_api_gateway_integration" "products_id_put_eks" {
-  rest_api_id             = aws_api_gateway_rest_api.this.id
-  resource_id             = aws_api_gateway_resource.products_id.id
-  http_method             = aws_api_gateway_method.products_id_put.http_method
-  integration_http_method = "PUT"
-  type                    = "HTTP_PROXY"
-  uri                     = "${var.products_service_url}/products/{id}"
-  passthrough_behavior    = "WHEN_NO_MATCH"
-  
-  request_parameters = {
-    "integration.request.path.id" = "method.request.path.id"
-  }
-}
-
-# DELETE /products/{id}
-resource "aws_api_gateway_method" "products_id_delete" {
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  resource_id   = aws_api_gateway_resource.products_id.id
-  http_method   = "DELETE"
-  authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.token.id
-
-  request_parameters = {
-    "method.request.header.Authorization" = false
-    "method.request.path.id"              = true
-  }
-}
-
-resource "aws_api_gateway_integration" "products_id_delete_eks" {
-  rest_api_id             = aws_api_gateway_rest_api.this.id
-  resource_id             = aws_api_gateway_resource.products_id.id
-  http_method             = aws_api_gateway_method.products_id_delete.http_method
-  integration_http_method = "DELETE"
-  type                    = "HTTP_PROXY"
-  uri                     = "${var.products_service_url}/products/{id}"
-  passthrough_behavior    = "WHEN_NO_MATCH"
-  
   request_parameters = {
     "integration.request.path.id" = "method.request.path.id"
   }
@@ -292,11 +364,13 @@ resource "aws_api_gateway_deployment" "this" {
   depends_on = [
     aws_api_gateway_integration.auth_lambda,
     aws_api_gateway_integration.orders_eks,
-    aws_api_gateway_integration.products_get_eks,
-    aws_api_gateway_integration.products_post_eks,
+    aws_api_gateway_integration.orders_get_eks,
+    aws_api_gateway_integration.orders_id_get_eks,
+    aws_api_gateway_integration.payments_checkout_post_eks,
+    aws_api_gateway_integration.payments_status_orderid_get_eks,
+    aws_api_gateway_integration.webhook_mercadopago_post_eks,
+    aws_api_gateway_integration.products_category_get_eks,
     aws_api_gateway_integration.products_id_get_eks,
-    aws_api_gateway_integration.products_id_put_eks,
-    aws_api_gateway_integration.products_id_delete_eks,
     aws_api_gateway_integration.proxy_eks
   ]
   rest_api_id = aws_api_gateway_rest_api.this.id
