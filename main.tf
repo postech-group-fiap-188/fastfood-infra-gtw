@@ -7,7 +7,6 @@ provider "aws" {
 resource "aws_api_gateway_domain_name" "fiap" {
   domain_name              = "fiap-lab.com.br"
   regional_certificate_arn = "arn:aws:acm:us-east-1:106185763495:certificate/2360e582-1bf2-47ec-b711-8c388ea36f73"
-  security_policy          = "TLS_1_2"
 
   endpoint_configuration {
     types = ["REGIONAL"]
