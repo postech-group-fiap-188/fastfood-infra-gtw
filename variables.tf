@@ -18,8 +18,23 @@ variable "authorizer_lambda_invoke_arn" {
   type        = string
 }
 
-variable "eks_service_url" {
-  description = "Endpoint do serviço no EKS (ALB/NLB URL)"
+variable "products_service_url" {
+  description = "Endpoint do microsserviço de produtos no EKS"
+  type        = string
+}
+
+variable "orders_service_url" {
+  description = "Endpoint do microsserviço de orders no EKS"
+  type        = string
+}
+
+variable "payments_service_url" {
+  description = "Endpoint do microsserviço de payments no EKS"
+  type        = string
+}
+
+variable "kitchen_service_url" {
+  description = "Endpoint do microsserviço de kitchen no EKS"
   type        = string
 }
 

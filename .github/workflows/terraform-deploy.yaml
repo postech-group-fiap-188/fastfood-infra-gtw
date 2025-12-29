@@ -18,7 +18,10 @@ jobs:
             AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
             AUTH_LAMBDA_INVOKE_ARN: ${{ secrets.AUTH_LAMBDA_INVOKE_ARN }}
             AUTHORIZER_LAMBDA_INVOKE_ARN: ${{ secrets.AUTHORIZER_LAMBDA_INVOKE_ARN }}
-            EKS_SERVICE_URL: ${{ secrets.EKS_SERVICE_URL }}
+            PRODUCTS_SERVICE_URL: ${{ secrets.PRODUCTS_SERVICE_URL }}
+            ORDERS_SERVICE_URL: ${{ secrets.ORDERS_SERVICE_URL }}
+            PAYMENTS_SERVICE_URL: ${{ secrets.PAYMENTS_SERVICE_URL }}
+            KITCHEN_SERVICE_URL: ${{ secrets.KITCHEN_SERVICE_URL }}
 
         steps:
             - name: Checkout repository
@@ -44,7 +47,10 @@ jobs:
                     -var="region=$AWS_REGION" \
                     -var="auth_lambda_invoke_arn=$AUTH_LAMBDA_INVOKE_ARN" \
                     -var="authorizer_lambda_invoke_arn=$AUTHORIZER_LAMBDA_INVOKE_ARN" \
-                    -var="eks_service_url=$EKS_SERVICE_URL"
+                    -var="products_service_url=$PRODUCTS_SERVICE_URL" \
+                    -var="orders_service_url=$ORDERS_SERVICE_URL" \
+                    -var="payments_service_url=$PAYMENTS_SERVICE_URL" \
+                    -var="kitchen_service_url=$KITCHEN_SERVICE_URL"
 
             - name: Terraform Apply
               run: terraform apply -input=false -auto-approve tfplan
