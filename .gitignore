@@ -1,9 +1,10 @@
-# Terraform
+.terraform/
+.terraform.lock.hcl
+
 *.tfstate
-*.tfstate.*
+*.tfstate.backup
 
-# Local environment variables
+*.tfvars
+*.tfvars.json
+
 .env
-
-# Crash logs
-*.log
