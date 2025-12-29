@@ -77,8 +77,12 @@ resource "aws_api_gateway_integration" "products_proxy_eks" {
   http_method             = aws_api_gateway_method.products_proxy_any.http_method
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.products_service_url}/{proxy}"
+  uri                     = "${var.products_service_url}/api/{proxy}"
   passthrough_behavior    = "WHEN_NO_MATCH"
+
+  tls_config {
+    insecure_skip_verification = false
+  }
 
   request_parameters = {
     "integration.request.path.proxy"           = "method.request.path.proxy"
@@ -135,7 +139,11 @@ resource "aws_api_gateway_integration" "orders_post_eks" {
   http_method             = aws_api_gateway_method.orders_post.http_method
   integration_http_method = "POST"
   type                    = "HTTP"
-  uri                     = "${var.orders_service_url}/orders"
+  uri                     = "${var.orders_service_url}/api/orders"
+
+  tls_config {
+    insecure_skip_verification = false
+  }
 
   request_templates = {
     "application/json" = <<EOF
@@ -198,8 +206,12 @@ resource "aws_api_gateway_integration" "orders_proxy_eks" {
   http_method             = aws_api_gateway_method.orders_proxy_any.http_method
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.orders_service_url}/{proxy}"
+  uri                     = "${var.orders_service_url}/api/{proxy}"
   passthrough_behavior    = "WHEN_NO_MATCH"
+
+  tls_config {
+    insecure_skip_verification = false
+  }
 
   request_parameters = {
     "integration.request.path.proxy"           = "method.request.path.proxy"
@@ -244,8 +256,12 @@ resource "aws_api_gateway_integration" "payment_proxy_eks" {
   http_method             = aws_api_gateway_method.payment_proxy_any.http_method
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.payments_service_url}/{proxy}"
+  uri                     = "${var.payments_service_url}/api/{proxy}"
   passthrough_behavior    = "WHEN_NO_MATCH"
+
+  tls_config {
+    insecure_skip_verification = false
+  }
 
   request_parameters = {
     "integration.request.path.proxy"           = "method.request.path.proxy"
@@ -290,8 +306,12 @@ resource "aws_api_gateway_integration" "kitchen_proxy_eks" {
   http_method             = aws_api_gateway_method.kitchen_proxy_any.http_method
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
-  uri                     = "${var.kitchen_service_url}/{proxy}"
+  uri                     = "${var.kitchen_service_url}/api/{proxy}"
   passthrough_behavior    = "WHEN_NO_MATCH"
+
+  tls_config {
+    insecure_skip_verification = false
+  }
 
   request_parameters = {
     "integration.request.path.proxy"           = "method.request.path.proxy"
